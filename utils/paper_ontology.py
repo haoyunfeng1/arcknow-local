@@ -63,7 +63,7 @@ class PaperOntology:
     def create_summary(self):
         response = self.flash.generate_content(
             '''
-            You are a researcher in information retrieval area. You want to give an overview of a paper from a conference. \
+            You are a researcher in computer science area. You want to give an overview of a paper from a conference. \
             You are giving the overview to business stakeholders who does not have computer science background. \
             You want to inform business why this paper is informative to their business. \
             In the overview, answer the following questions. Make sure your overview can be understood by business stakeholders: \
@@ -87,7 +87,7 @@ def create_overview(summaries, flash):
     '''
     response = flash.generate_content(
         '''
-        You are a researcher in information retrieval area. \
+        You are a researcher in computer science area. \
         You want to give an overview of all papers published on 2024 conference. \
         The audiences of this overview are 5th graders and you want to get them interested in the domain. \
         In the first section, talk about major use cases discussed in conference papers. \
@@ -103,6 +103,7 @@ def create_mp3(summary, output_path):
     '''
     The summary is a string of initivial paper summary or all papers overview 
     '''
+    language = 'en'
     myobj = gTTS(text=summary, lang=language, slow=False)
     myobj.save(Path(output_path))
     return 0 

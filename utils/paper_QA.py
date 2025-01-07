@@ -15,7 +15,7 @@ def paper2doc(papers):
     for p in papers:
         for s in p['sections']:
             doc = Document(page_content=s['section_content'],
-                           metadata={"title": s['section_title']})
+                           metadata={'title': p['title'], 'section_title': s['section_title']})
             docs.append(doc)
     return docs
 
@@ -26,6 +26,9 @@ class EmbeddingDB:
         self.db = Neo4jVector.from_documents(
             docs, embeddings, url=uri, username=user, password=password
         )
+
+    def insert(self, docs):
+        self.db.add_documents(docs)
 
     def query(self, query, n=2, doPrint=True):
         docs_with_score = self.db.similarity_search_with_score(query, k=n)
