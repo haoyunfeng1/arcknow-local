@@ -11,7 +11,7 @@ def sigir_demo():
     from google.api_core import retry
     import numpy as np
 
-    genai.configure(api_key="AIzaSyDGWTFPppWNVJARFTHuaWKVg-ENwCQOuxE")
+    genai.configure(api_key="<>")
     flash = genai.GenerativeModel('gemini-1.5-flash')
     embedding_task = "retrieval_query"
     retry_policy = {"retry": retry.Retry(predicate=retry.if_transient_error)}
@@ -80,14 +80,14 @@ def icml_demo():
     from langchain_google_genai import GoogleGenerativeAIEmbeddings
     
     if "GOOGLE_API_KEY" not in os.environ:
-        os.environ["GOOGLE_API_KEY"] = "AIzaSyDGWTFPppWNVJARFTHuaWKVg-ENwCQOuxE"
+        os.environ["GOOGLE_API_KEY"] = "<>"
 
-    genai.configure(api_key="AIzaSyDGWTFPppWNVJARFTHuaWKVg-ENwCQOuxE")
+    genai.configure(api_key="<>")
     flash = genai.GenerativeModel('gemini-1.5-flash')
     
     NEO4J_URI='neo4j+s://e0a3a179.databases.neo4j.io'
     NEO4J_USERNAME='neo4j'
-    NEO4J_PASSWORD='D28gPFcuImX_3SQeOHRsVYeZjfmv38iVK7R-jAOZodM'
+    NEO4J_PASSWORD='<>'
 
     tab1, tab2 = st.tabs(["Overviews", "Question Answer"])
 

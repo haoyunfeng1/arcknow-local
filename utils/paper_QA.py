@@ -4,7 +4,7 @@ from langchain_google_genai import GoogleGenerativeAIEmbeddings
 from langchain_core.documents import Document
 
 if "GOOGLE_API_KEY" not in os.environ:
-    os.environ["GOOGLE_API_KEY"] = "AIzaSyDGWTFPppWNVJARFTHuaWKVg-ENwCQOuxE"
+    os.environ["GOOGLE_API_KEY"] = "<>"
 
 def paper2doc(papers):
     '''
@@ -43,7 +43,7 @@ class EmbeddingDB:
 import google.generativeai as genai
 from google.api_core import retry
 
-genai.configure(api_key='AIzaSyDGWTFPppWNVJARFTHuaWKVg-ENwCQOuxE')
+genai.configure(api_key='<>')
 retry_policy = {"retry": retry.Retry(predicate=retry.if_transient_error)}
 class GeminiEmbeddingFunction:
     # Specify whether to generate embeddings for documents, or queries
