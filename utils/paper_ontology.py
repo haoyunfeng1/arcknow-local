@@ -5,6 +5,56 @@ import json
 from gtts import gTTS
 from pathlib import Path
 from utils.icml_parser import paper_json_to_text
+from collections import defaultdict
+
+# This class represents a directed graph using
+# adjacency list representation
+class Graph:
+
+    # Constructor
+    def __init__(self):
+
+        # Default dictionary to store graph
+        self.graph = defaultdict(list)
+        self.node_properties = {}
+
+    def addNode(self, n):
+        self.node_properties[n['id']] = n['properties']
+    
+    # Function to add an edge to graph
+    def addEdge(self, r):
+        self.graph[r['start']].append((r['end'], r['properties']['label']))
+
+    
+    # A function used by DFS
+    def DFSUtil(self, v, visited, r_label, level, prints):
+
+        # Mark the current node as visited
+        # and print it
+        visited.add(v)
+        for i in range(level):
+            prints += '---->'
+        prints += r_label + '::' + self.node_properties[v]['label'] + '::' + self.node_properties[v]['name'] + '\n'
+
+        # Recur for all the vertices
+        # adjacent to this vertex
+        for neighbour, l in self.graph[v]:
+            if neighbour not in visited:
+                prints = self.DFSUtil(neighbour, visited, l, level+1, prints)
+        return prints
+    
+    # The function to do DFS traversal. It uses
+    # recursive DFSUtil()
+    def DFS(self, v):
+
+        # Create a set to store visited vertices
+        visited = set()
+
+        # Call the recursive helper function
+        # to print DFS traversal
+        prints = ''
+        prints = self.DFSUtil(v, visited, '', 0, prints)
+        return prints
 
 class PaperOntology:
     def __init__(self, 
@@ -17,6 +67,8 @@ class PaperOntology:
         self.flash = flash
         self.ontology = None
         self.summary = None
+        self.paper_info = None
+        self.ontology_str = None
 
     def create_ontology_json(self):
         response = self.flash.generate_content(
@@ -60,6 +112,20 @@ class PaperOntology:
         self.ontology = paper_ontology
         return paper_ontology
 
+    def create_ontology_str(self):
+        if not self.ontology:
+            raise Exception('Please call create_ontology_json() first')
+        g = Graph()
+        for n in self.ontology['nodes']:
+            g.addNode(n)
+        
+        for r in self.ontology['relationships']:
+            g.addEdge(r)
+        
+        s = g.DFS(self.ontology['nodes'][0]['id'])
+        self.ontology_str = s
+        return s
+
     def create_summary(self):
         response = self.flash.generate_content(
             '''
@@ -79,7 +145,55 @@ class PaperOntology:
             ''' + paper_json_to_text(self.paper)
         )
         self.summary = response.text 
-        return(response.text)
+        return response.text
+
+    def extract_info(self):
+        if not self.summary:
+            raise Exception('Extract paper info requires summary being generated. Call create_summary() first')
+        response = self.flash.generate_content(
+                    '''
+                    You are an computer science researcher tasks with extracting information from papers 
+                    and structuring it in a json format to inform further research analysis.
+        
+                    Extract the use case description, methods used, benchmark tested and metrics reported from the following Input text. 
+                    
+                    Return result as JSON using the following format:
+                    {"Use case description": "description of the use case", 
+                    "AI Methods": [<a list of AI methods / models used in the paper>], 
+                    "Benchmarks": [<a list of benchmarks used for testing in the paper>],
+                    "Metrics": [<Metrics being reported in the paper>]}
+                    
+                    - Use only the information from the Input text. Do not add any additional information.  
+                    - If the input text is empty, return empty Json. 
+                    - Make sure to list complete set of methods, benchmarks and metrics from the paper.
+                    - An AI knowledge assistant must be able to read this graph and immediately understand the context to inform detailed research questions. 
+                    - Multiple documents will be ingested from different sources and we are using this json to connect information, so make sure terminology is fairly general. 
+                    
+                    Use only fhe following nodes and relationships (if provided):
+                    {schema}
+                    
+                    Assign a unique ID (string) to each node, and reuse it to define relationships.
+                    Do respect the source and target node types for relationship and
+                    the relationship direction.
+                    
+                    Do not return any additional information other than the JSON in it.
+        
+                    Input text:
+                    
+                    ''' + self.summary
+                )
+        s = 0
+        e = 0
+        for i, c in enumerate(response.text):
+            if c == '{':
+                s = i
+                break
+        for i in range(len(response.text)-1, 0, -1):
+            if response.text[i] == '}':
+                e = i
+                break
+        self.paper_info = json.loads(response.text[s:e+1])
+        return self.paper_info
 
 def create_overview(summaries, flash):
     '''

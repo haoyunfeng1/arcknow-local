@@ -4,6 +4,9 @@ import urllib.request
 from pathlib import Path
 import argparse
 from tqdm import tqdm
+import socket
+
+socket.setdefaulttimeout(100)
 
 def download_papers(url, output_path):
     '''Download all the pdf links from <url> and store in <output_path>'''
@@ -27,6 +30,42 @@ def download_papers(url, output_path):
         raise Exception(f"Request failed with status code {response.status_code}")
         
     return 0 
+
+def download_nips(url, output_path):
+    '''
+    Download all the pdf links from <url> and store in <output_path>
+    This handles NIPS proceedings page specifically https://papers.nips.cc/paper_files/paper/2024
+    '''
+    response = requests.get(url)
+    if response.status_code == 200:
+        Path(output_path).mkdir(parents=True, exist_ok=True)
+        soup = BeautifulSoup(response.content, 'html.parser')
+        links = soup.find_all('a')
+        index = 0
+        for link in tqdm(links):
+            try:
+                if link.get('href')[-24:] == 'Abstract-Conference.html':
+                    r = requests.get('https://papers.nips.cc' + link.get('href'))
+                    if r.status_code == 200:
+                        soup = BeautifulSoup(r.content, 'html.parser')
+                        ls = soup.find_all('a')
+                        retrieved = False
+                        for l in ls:
+                            if l.get('href')[-4:] == '.pdf':
+                                paper_pdf = l.get('href')
+                                file_name = Path(output_path, f'paper_{index}.pdf')
+                                urllib.request.urlretrieve('https://papers.nips.cc'+paper_pdf, file_name)
+                                index += 1
+                                retrieved = True
+                        if not retrieved:
+                            print("Cannot retrieve " + str(link))
+                    else:
+                        raise Exception(f"Request failed with status code {r.status_code}")
+            except:
+                print("Failed to retrieve " + str(link))
+    else:
+        raise Exception(f"Request failed with status code {response.status_code}")
+    return 0
 
 if __name__ == '__main__':
     parser = argparse.ArgumentParser(description='Download papers in pdf')
