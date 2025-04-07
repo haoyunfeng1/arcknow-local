@@ -15,14 +15,12 @@ This repo includes code for
 Created base envrionment from Anaconda python=3.1.9
 
 Install dependencies
-
-'''
+'''console
 $ pip install -r requirements.txt
 '''
 
 Test in jupyter 
-
-'''
+'''console
 $ jupyter notebook
 '''
 
