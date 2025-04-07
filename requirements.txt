@@ -1,0 +1,10 @@
+langchain_neo4j
+langchain_google_genai
+langchain_core
+neo4j
+google-generativeai
+gtts
+pymupdf
+tqdm
+jupyter
+numpy
