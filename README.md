@@ -3,7 +3,7 @@ Code in this repo powers the website at https://arcknow.com
 
 ## Overview
 This repo includes code for 
-- Down scentific papers in pdf from online and parse papers into json format. Parsers are available for
+- Download scentific papers in pdf from online and parse papers into json format. Parsers are available for
     - ICML 2024 proceeding
     - SIGIR 2024 proceeding
     - NIPS 2024 proceeding
